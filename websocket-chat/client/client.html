@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      border-bottom: 1px solid #ccc;
+    }
+    #chat div {
+      margin: 5px 0;
+    }
+    #input-container {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+    #message {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    #send {
+      padding: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="chat"></div>
+
+  <div id="input-container">
+    <input type="text" id="message" placeholder="Type a message..." />
+    <button id="send">Send</button>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const messageInput = document.getElementById('message');
+    const sendButton = document.getElementById('send');
+
+    // Prompt the user for a non-empty username
+    let username = '';
+    while (!username) {
+      username = prompt("Enter your username:");
+      if (!username) {
+        alert("Username cannot be empty. Please enter a valid username.");
+      }
+    }
+
+    // Connect to the WebSocket server
+    const ws = new WebSocket('ws://localhost:8080');
+
+    ws.onopen = () => {
+      console.log('Connected to the WebSocket server');
+      // Send a message to notify the server of the new username
+      ws.send(JSON.stringify({ username, message: `${username} has joined the chat.` }));
+    };
+
+    ws.onmessage = (event) => {
+      const { username: senderUsername, message, timestamp, type } = JSON.parse(event.data);
+      const timeString = new Date(timestamp).toLocaleTimeString();
+
+      // Only display join/leave messages from other users
+      if (type === 'join' && senderUsername === username) return;
+      if (type === 'leave' && senderUsername === username) return;
+
+      const chatMessage = document.createElement('div');
+      if (type === 'join' || type === 'leave') {
+        // Special styling for join/leave notifications
+        chatMessage.innerHTML = `<em>[${timeString}] ${message}</em>`;
+      } else {
+        // Display regular chat messages
+        chatMessage.innerHTML = `<strong>[${timeString}] ${senderUsername}:</strong> ${message}`;
+      }
+      chat.appendChild(chatMessage);
+      chat.scrollTop = chat.scrollHeight; // Scroll to the latest message
+    };
+
+    sendButton.onclick = () => {
+      const message = messageInput.value.trim();
+      if (message) {
+        ws.send(JSON.stringify({ username, message })); // Send the username with each message
+        messageInput.value = ''; // Clear the input field
+      }
+    };
+
+    // Send message on Enter key press
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendButton.click();
+    });
+  </script>
+
+</body>
+</html>

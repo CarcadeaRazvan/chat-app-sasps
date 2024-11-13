@@ -1,0 +1,13 @@
+{
+    "name": "pubsub-chat",
+    "version": "1.0.0",
+    "description": "Simple Redis Pub/Sub chat application",
+    "main": "client/pub-client.js",
+    "dependencies": {
+      "redis": "^4.0.0"
+    },
+    "scripts": {
+      "start-client": "node client/pub-client.js"
+    }
+  }
+  
