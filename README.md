@@ -56,23 +56,28 @@ pentru aplicatia in starea actuala s-au obtinut urmatoarele rezultate cu testele
    Throughput
 
 - Pub/Sub achieved a slightly higher throughput (~35/sec) compared to WebSocket (~30/sec).
-  -> This is likely due to Pub/Sub’s simpler request-response cycle and the fixed message sizes.
-  -> WebSocket throughput might be influenced by the additional session management overhead or the need to keep connections open longer.
+
+        -> This is likely due to Pub/Sub’s simpler request-response cycle and the fixed message sizes.
+        -> WebSocket throughput might be influenced by the additional session management overhead or the need to keep connections open longer.
 
 Response Times
 
 - Pub/Sub (HTTP):
-  -> Mean response time: ~2.8ms.
-  -> 95th percentile (P95): ~7.9ms.
-  -> 99th percentile (P99): ~12.1ms.
+
+        -> Mean response time: ~2.8ms.
+        -> 95th percentile (P95): ~7.9ms.
+        -> 99th percentile (P99): ~12.1ms.
+
 - WebSocket:
-  -> Response times are not directly reported by Artillery but can be inferred from session lengths.
-  -> Mean session length: ~4012ms, indicating slightly higher per-operation latency.
+
+        -> Response times are not directly reported by Artillery but can be inferred from session lengths.
+        -> Mean session length: ~4012ms, indicating slightly higher per-operation latency.
 
 Session Length
 
 - Pub/Sub sessions were shorter (~3024ms mean) than WebSocket sessions (~4012ms mean).
-  -> This is expected since Pub/Sub clients terminate the connection after each request, while WebSocket clients maintain a persistent connection throughout the test.
+
+        -> This is expected since Pub/Sub clients terminate the connection after each request, while WebSocket clients maintain a persistent connection throughout the test.
 
 Scalability
 
