@@ -1,25 +1,25 @@
-const http = require('http');
-const fs = require('fs');
-const WebSocket = require('ws');
-const path = require('path');
+const http = require("http");
+const fs = require("fs");
+const WebSocket = require("ws");
+const path = require("path");
 
 // Create an HTTP server
 const server = http.createServer((req, res) => {
-  if (req.url === '/') {
-    const filePath = path.join(__dirname, '..', 'client', 'client.html');
+  if (req.url === "/") {
+    const filePath = path.join(__dirname, "..", "client", "client.html");
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        console.error('File read error:', err);
+        console.error("File read error:", err);
         res.writeHead(500);
-        res.end('Error loading client.html');
+        res.end("Error loading client.html");
       } else {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.writeHead(200, { "Content-Type": "text/html" });
         res.end(data);
       }
     });
   } else {
     res.writeHead(404);
-    res.end('Not Found');
+    res.end("Not Found");
   }
 });
 
@@ -27,41 +27,49 @@ const server = http.createServer((req, res) => {
 const wss = new WebSocket.Server({ server });
 const clients = new Map(); // Store usernames associated with WebSocket connections
 
-wss.on('connection', (ws) => {
-  let username = '';
+wss.on("connection", (ws) => {
+  let username = null;
+  let parsedData;
+  ws.on("message", (data) => {
+    try {
+      parsedData = JSON.parse(data);
+      console.log("Parsed message:", parsedData);
+    } catch (e) {
+      console.error("Failed to parse message:", e.message);
+    }
 
-  ws.on('message', (data) => {
-    const parsedData = JSON.parse(data);
-
-    // If username is empty, this is the first message from this client
-    if (!username && parsedData.message.includes("has joined the chat")) {
+    if (!username && parsedData.username) {
       username = parsedData.username;
-      clients.set(ws, username); // Map this WebSocket connection to the username
+      clients.set(ws, username);
+
       console.log(`${username} connected to the chat`);
 
-      // Notify all other clients that this user has joined
       const joinMessage = JSON.stringify({
-        username: 'Server',
+        username: "Server",
         message: `${username} has joined the chat.`,
         timestamp: Date.now(),
-        type: 'join'
+        type: "join",
       });
 
       wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN && client !== ws) {
+        if (client.readyState === WebSocket.OPEN) {
           client.send(joinMessage);
         }
       });
-    } else if (username) {
-      // Handle regular chat messages
+
+      return; // Exit early since this is the first message
+    }
+
+    // Handle subsequent messages
+    if (username) {
+      console.log(`Received message from ${username}: ${parsedData.message}`);
       const messageWithTimestamp = JSON.stringify({
         username,
         message: parsedData.message,
         timestamp: Date.now(),
-        type: 'message'
+        type: "message",
       });
 
-      // Broadcast the chat message to all clients
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(messageWithTimestamp);
@@ -70,17 +78,16 @@ wss.on('connection', (ws) => {
     }
   });
 
-  ws.on('close', () => {
+  ws.on("close", () => {
     if (username) {
       console.log(`${username} disconnected from the chat`);
-      clients.delete(ws); // Remove the user from the map on disconnection
+      clients.delete(ws);
 
-      // Notify all other clients that the user has left the chat
       const leaveMessage = JSON.stringify({
-        username: 'Server',
+        username: "Server",
         message: `${username} has left the chat.`,
         timestamp: Date.now(),
-        type: 'leave'
+        type: "leave",
       });
 
       wss.clients.forEach((client) => {
@@ -93,5 +100,5 @@ wss.on('connection', (ws) => {
 });
 
 server.listen(8080, () => {
-  console.log('Server is running on http://localhost:8080');
+  console.log("Server is running on http://localhost:8080");
 });

@@ -1,0 +1,13 @@
+{
+  "name": "chat-app-tests",
+  "version": "1.0.0",
+  "description": "Load and performance tests for chat apps",
+  "scripts": {
+    "test:websocket": "artillery run artillery-websocket.yml",
+    "test:pubsub": "artillery run artillery-pubsub.yml",
+    "test:all": "./run_tests.sh"
+  },
+  "devDependencies": {
+    "artillery": "^2.0.0-0"
+  }
+}

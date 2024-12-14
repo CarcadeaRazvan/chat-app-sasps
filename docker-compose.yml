@@ -1,0 +1,45 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:6-alpine
+    container_name: redis-server
+    command: ["redis-server"]
+    ports:
+      - "6379:6379"
+
+  pubsub-server:
+    build: ./pubsub-chat
+    container_name: pubsub-server
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      HTTP_GATEWAY_PORT: 3000
+    depends_on:
+      - redis
+    links:
+      - redis
+    ports:
+      - "3000:3000"
+
+  # You can run `docker-compose run pubsub-client` and interactively enter a username and send messages.
+  pubsub-client:
+    build: ./pubsub-chat
+    container_name: pubsub-client
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    entrypoint: ["node", "client/pub-client.js"]
+    depends_on:
+      - redis
+      - pubsub-server
+    links:
+      - redis
+      - pubsub-server
+    tty: true
+    stdin_open: true
+
+  websocket-server:
+    build: ./websocket-chat
+    container_name: websocket-server
+    ports:
+      - "8080:8080"
