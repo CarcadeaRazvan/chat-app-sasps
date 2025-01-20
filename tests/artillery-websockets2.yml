@@ -1,0 +1,21 @@
+config:
+  target: "ws://localhost:8080"
+  phases:
+    - duration: 30
+      arrivalRate: 100
+      rampTo: 100
+  defaults:
+    ws:
+      latency: true
+scenarios:
+  - engine: "ws"
+    flow:
+      - connect: {}
+      - think: 1
+      - send: '{"username":"testUser"}'
+      - think: 1
+      - send: '{"message":"Hello from WebSocket test"}'
+      - think: 1
+      - send: '{"message":"Hello! This is a test!"}'
+      - think: 1
+      - send: '{"message":"Hello! This is a second test!"}'

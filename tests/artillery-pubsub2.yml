@@ -1,0 +1,31 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 30
+      arrivalRate: 100
+      rampTo: 100
+scenarios:
+  - flow:
+      - post:
+          url: "/publish"
+          json:
+            username: "loadUser"
+            content: "Hello from Pub/Sub test!"
+      - think: 1
+      - post:
+          url: "/publish"
+          json:
+            username: "loadUser"
+            content: "Hello! This is a test!"
+      - think: 1
+      - post:
+          url: "/publish"
+          json:
+            username: "loadUser"
+            content: "This is a second test message!"
+      - think: 1
+      - post:
+          url: "/publish"
+          json:
+            username: "loadUser"
+            content: "Load testing with Pub/Sub is awesome!"
